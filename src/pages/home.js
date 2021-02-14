@@ -24,7 +24,9 @@ const home = (props) => {
                 await AtualizaDados();
             }
         });
-        return null;
+        return () => {
+
+        };
     }, [props.navigation]);
 
 
@@ -35,8 +37,7 @@ const home = (props) => {
         (async () => {
             await AtualizaDados();
         })();
-        return () => {
-        }
+        return () => { };
     }, [])
     //#endregion
     return (
