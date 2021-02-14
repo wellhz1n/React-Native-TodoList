@@ -1,9 +1,10 @@
-import React,{useState,useRef} from 'react';
+import React,{useState,useRef,useEffect} from 'react';
 import { View, Text, SafeAreaView ,
          TextInput,StyleSheet,TouchableOpacity,
          FlatList,ScrollView, ToastAndroid, Platform} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import TodoClass from '../class/TodoClass';
+import {setItem,getItem,getItems} from '../utils/AsyncStorageUtils';
 
 const newTodo = (props) => {
     const [listaCores,setListaCores] =  useState([
@@ -21,10 +22,19 @@ const DescricaoRef = useRef(null);
 //#region Variaveis
 const [titulo,setTitulo] = useState('');
 const [descricao,setDescricao] = useState('');
-const [cor,setCor] = useState(listaCores.filter(x=> x.selected)[0]);
+const [cor,setCor] = useState(listaCores.filter(x=> x.selected)[0].cor);
 const [situacao,setSituacao] = useState(0);
 //#endregion
  const [Editando,setEditando] = useState(false);
+
+
+ useEffect(() => {
+  console.log(props.route.params)
+    return () => {
+    }
+}, [props.route.params?.Todo])
+
+
 
 
 const Save = async ()=>{
@@ -50,15 +60,19 @@ const Save = async ()=>{
     }    
 //#endregion
     
-var todo = TodoClass()
+ var todo = TodoClass()
         todo.titulo = titulo;
         todo.cor = cor;
         todo.descricao = descricao;
         todo.situacao = situacao;
 
+ if(await setItem(todo)){
+     console.log(JSON.stringify(todo));
+     props.navigation.navigate("Home",{recarregar:true});
+ }
 
+        
 }
-
 
 const CancelarClick =()=>{
         if(!Editando){
@@ -177,7 +191,7 @@ const estilo = StyleSheet.create({
             padding:10,
             borderRadius:10,
             marginVertical:10,
-            lineHeight:10,
+            lineHeight:14,
             minHeight:150,
             maxHeight:150,
             textAlignVertical:'top'

@@ -1,27 +1,40 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import React,{useEffect,useState} from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList,Alert, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import TodoItem from '../components/TodoItem';
+import {setItem,getItem,getItems} from '../utils/AsyncStorageUtils';
 // import { Container } from './styles';
 
 const home = (props) => {
+const [dados, setdados] = useState([{ id: 0, tipo: 0 }])
+useEffect(() => {
+    console.log(JSON.stringify(props.navigation));
+    (async ()=>{
+        var itens = await getItems();
+        if(itens == null)
+        itens = [];
+                setdados([{id: 0, tipo: 0 },...itens]);
+                console.log(JSON.stringify(itens));
+        })();
+    return () => {
+    }
+}, [])
+
+useEffect(() => {
+  console.log(props.route.params);
+
+    (async ()=>{
+        var itens = await getItems();
+        if(itens == null)
+        itens = [];
+                setdados([{id: 0, tipo: 0 },...itens]);
+                console.log(JSON.stringify(itens));
+        })();
+    return () => {
+    }
+}, [props.route.params?.recarregar])
+
     console.log(props);
-    const dados = [
-        { Id: 0, tipo: 0 },
-        {
-            Id: 1,
-            Title: "Terminar App",
-            Description: "Preciso terminar logo esse app",
-            Situacao: 0,
-            Color: "#004334fa"
-        },
-        {
-            Id: 2,
-            Title: "Terminar App2",
-            Description: "Preciso terminar logo esse app2",
-            Situacao: 1,
-            Color: "#aa4334fa"
-        }];
     return (
 
         <View style={estilo.container}>
@@ -30,7 +43,7 @@ const home = (props) => {
             </View>
 
             <FlatList
-                keyExtractor={(item) => JSON.stringify(item.Id)}
+                keyExtractor={(item) => JSON.stringify(item.id)}
                 style={{ flex: 1, marginVertical: 80 }}
                 horizontal={true}
                 scrollEventThrottle={10}
@@ -40,7 +53,7 @@ const home = (props) => {
                 contentContainerStyle={estilo.TodoItemContainer}
                 renderItem={({ item, index }) => {
                     console.log(index)
-
+                    var it = item;
                     if (item.tipo != undefined)
                         return (
                             <TouchableOpacity
@@ -65,10 +78,13 @@ const home = (props) => {
                     else
                         return (
                             <TodoItem
-                                Title={item.Title}
-                                Description={item.Description}
-                                Situation={item.Situacao}
-                                Cor={item.Color}
+                                onPress={()=>{
+                                    props.navigation.navigate('newTodo',{Todo:it});
+                                }}
+                                Title={item.titulo}
+                                Description={item.descricao}
+                                Situation={item.situacao}
+                                Cor={item.cor}
                                 style={[index == 0 ? { marginLeft: 38 } : index == dados.length - 1 ? { marginRight: 30 } : null]}
                             />
                         )
@@ -109,8 +125,7 @@ const estilo = StyleSheet.create({
         },
         shadowOpacity: 0.29,
         shadowRadius: 4.65,
-
-        elevation: 3,
+        elevation: 2,
     },
     TodoItemContainer: {
         alignItems: 'center',
