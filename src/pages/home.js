@@ -1,40 +1,44 @@
-import React,{useEffect,useState} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList,Alert, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import TodoItem from '../components/TodoItem';
-import {setItem,getItem,getItems} from '../utils/AsyncStorageUtils';
+import { setItem, getItem, getItems, removeItem } from '../utils/AsyncStorageUtils';
 // import { Container } from './styles';
 
 const home = (props) => {
-const [dados, setdados] = useState([{ id: 0, tipo: 0 }])
-useEffect(() => {
-    console.log(JSON.stringify(props.navigation));
-    (async ()=>{
+
+    //#region UseEffects
+    const AtualizaDados = async () => {
         var itens = await getItems();
-        if(itens == null)
-        itens = [];
-                setdados([{id: 0, tipo: 0 },...itens]);
-                console.log(JSON.stringify(itens));
-        })();
-    return () => {
+        if (itens == null)
+            itens = [];
+        if (itens.length > 0)
+            itens = itens.sort((a, b) => a.situacao - b.situacao);
+
+        setdados([{ id: 0, tipo: 0 }, ...itens]);
+        console.log(JSON.stringify(itens));
     }
-}, [])
+    useEffect(() => {
+        const FocusNavigationEvent = props.navigation.addListener('focus', async (e) => {
+            if (props.route.params?.recarregar != null && props.route.params.recarregar) {
+                await AtualizaDados();
+            }
+        });
+        return null;
+    }, [props.navigation]);
 
-useEffect(() => {
-  console.log(props.route.params);
 
-    (async ()=>{
-        var itens = await getItems();
-        if(itens == null)
-        itens = [];
-                setdados([{id: 0, tipo: 0 },...itens]);
-                console.log(JSON.stringify(itens));
+
+    const [dados, setdados] = useState([{ id: 0, tipo: 0 }])
+    useEffect(() => {
+        console.log(JSON.stringify(props.navigation));
+        (async () => {
+            await AtualizaDados();
         })();
-    return () => {
-    }
-}, [props.route.params?.recarregar])
-
-    console.log(props);
+        return () => {
+        }
+    }, [])
+    //#endregion
     return (
 
         <View style={estilo.container}>
@@ -78,8 +82,40 @@ useEffect(() => {
                     else
                         return (
                             <TodoItem
-                                onPress={()=>{
-                                    props.navigation.navigate('newTodo',{Todo:it});
+                                onPress={() => {
+                                    props.navigation.navigate('newTodo', { Todo: it });
+                                }}
+                                onLongPress={() => {
+                                    Alert.alert("Opções", "Selecione a operação desejada", [
+                                        {
+                                            text: "Cancelar",
+                                            onPress: () => false
+                                        },
+                                        {
+                                            text: "Excluir",
+                                            onPress: async () => {
+                                                if (await removeItem(it.id)) {
+                                                    await AtualizaDados();
+                                                    return true;
+                                                }
+                                            }
+                                        },
+                                        {
+                                            text: (it.situacao == 0 ? "Concluir" : "Pendente"),
+                                            onPress: () => {
+                                                (async () => {
+                                                    var i = it;
+                                                    i.situacao = i.situacao == 0 ? 1 : 0;
+
+                                                    console.log("adsad")
+                                                    await setItem(i);
+                                                    await AtualizaDados();
+                                                    return true;
+                                                })();
+                                            }
+                                        }
+                                    ],
+                                        { cancelable: true })
                                 }}
                                 Title={item.titulo}
                                 Description={item.descricao}

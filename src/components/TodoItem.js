@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/AntDesign';
 // import { Container } from './styles';
 /**
  * 
- * @param {{Situation:int,Title: string,Description:String,onPress:function,Cor:String}} props 
+ * @param {{Situation:int,Title: string,Description:String,onPress:function,onLongPress:function,Cor:String}} props 
  */
 const TodoItem = (props) => {
     //#region  Estilo
@@ -37,7 +37,9 @@ const TodoItem = (props) => {
     //#endregion
 
     return (
-        <TouchableOpacity onPress={()=>props.onPress()} activeOpacity={0.8} style={[estilo.TodoItem, estilo.Shadow, ...props.style]}>
+        <TouchableOpacity
+            onLongPress={() => props.onLongPress()}
+            onPress={() => props.onPress()} activeOpacity={0.8} style={[estilo.TodoItem, estilo.Shadow, ...props.style]}>
             <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
                 <Icon size={20} color='#FFF' name={props.Situation != undefined && props.Situation == 1 ? "checkcircle" : "clockcircleo"}></Icon>
                 <Text style={{ color: '#FFF', fontSize: 20, fontWeight: 'bold', left: 10 }}>{props.Title}</Text>
